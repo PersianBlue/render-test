@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 
+app.use(express.static("build"));
+
 const cors = require("cors");
 app.use(cors());
 
@@ -59,15 +61,24 @@ app.delete("/api/notes/:id", (request, response) => {
 });
 app.put("/api/notes/:id", (request, response) => {
   const id = Number(request.params.id);
-  const noteToUpdate = notes.find((n) => n.id === id);
+  console.table(notes);
+  const noteToUpdate = notes.find((n) => {
+    // console.log("notes:", notes);
+    console.log("Note id and given ID: ", n.id, id);
+    return n.id === id;
+  });
+
   if (!noteToUpdate) {
+    console.log("Note with that ID not found");
     return response
       .status(404)
       .json({ error: `No note found to update with id of ${id}` });
   }
-  notes = notes.filter((note) => note.id === id);
+  console.log("Note with that ID of", id, "found");
   noteToUpdate.content = request.body.content;
   noteToUpdate.important = request.body.important;
+  notes = notes.map((note) => (note.id !== id ? note : noteToUpdate));
+  console.log(noteToUpdate);
   response.json(noteToUpdate);
 });
 
